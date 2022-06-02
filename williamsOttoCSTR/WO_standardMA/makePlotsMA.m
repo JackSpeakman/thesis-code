@@ -13,9 +13,9 @@ else
     end
 end
 % add path
-addpath('../General Functions/');
-addpath('../General Functions/Plot/');
-addpath('../Case Studies/Willaims Otto Case/')
+addpath('../../plotFunctions/');
+addpath('../../plotFunctions/colours/');
+addpath('../WO_functions/')
 
 % set up constraint
 conFun = @(u,y)([y(:,6)-0.08]);
@@ -40,11 +40,11 @@ for i = 1:numel(MAfig)
     xlabel(ax(i),'Iteration, k','Interpreter','latex')
 end
 
-set(MAfig(1),'Position',[50+50*i,50+50*i,800,600])
-set(MAfig(2),'Position',[50+50*i,50+50*i,800,600])
-set(MAfig(3),'Position',[50+50*i,50+50*i,800*2/3,600*3/4])
-set(MAfig(4),'Position',[50+50*i,50+50*i,800*2/3,600*3/4])
-set(MAfig(5),'Position',[50+50*i,50+50*i,800*2/3,600*3/4])
+set(MAfig(1),'Position',[50+20*1,50+20*1,800,600])
+set(MAfig(2),'Position',[50+20*2,50+20*2,800,600])
+set(MAfig(3),'Position',[50+20*3,50+20*3,800*2/3,600*3/4])
+set(MAfig(4),'Position',[50+20*4,50+20*4,800*2/3,600*3/4])
+set(MAfig(5),'Position',[50+20*5,50+20*5,800*2/3,600*3/4])
 
 ylabel(ax(1),'$J$','Interpreter','latex')
 ylabel(ax(2),'$X_G$','Interpreter','latex')
@@ -129,18 +129,18 @@ drawnow
 % leg = {'Standard MA\quad','WCMA\quad','PMAi\quad','PAMj\quad','Plant Optimum\quad','Infeasible Region'};
 % legend(ax(3,2),leg,'Location','southoutside','Orientation','horizontal','Interpreter','latex');
 
-saveas(MAfig(1),'Plots\MAobj.eps','epsc')
-saveas(MAfig(1),'Plots\MAobj.fig','fig')
+saveas(MAfig(1),'plots\MAobj.eps','epsc')
+saveas(MAfig(1),'plots\MAobj.fig','fig')
 
-saveas(MAfig(2),'Plots\MAcon.eps','epsc')
-saveas(MAfig(2),'Plots\MAcon.fig','fig')
+saveas(MAfig(2),'plots\MAcon.eps','epsc')
+saveas(MAfig(2),'plots\MAcon.fig','fig')
 
-saveas(MAfig(3),'Plots\MAu1.eps','epsc')
-saveas(MAfig(3),'Plots\MAu1.fig','fig')
+saveas(MAfig(3),'plots\MAu1.eps','epsc')
+saveas(MAfig(3),'plots\MAu1.fig','fig')
 
-saveas(MAfig(4),'Plots\MAu2.eps','epsc')
-saveas(MAfig(4),'Plots\MAu2.fig','fig')
+saveas(MAfig(4),'plots\MAu2.eps','epsc')
+saveas(MAfig(4),'plots\MAu2.fig','fig')
 
-saveas(MAfig(5),'Plots\MAu3.eps','epsc')
-saveas(MAfig(5),'Plots\MAu3.fig','fig')
+saveas(MAfig(5),'plots\MAu3.eps','epsc')
+saveas(MAfig(5),'plots\MAu3.fig','fig')
 
