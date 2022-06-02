@@ -1,5 +1,5 @@
 function [ySol] = WOplantFun(u,yGuess,dtheta)
-% WOmodelFun takes the inputs to the WO model and calculate the outputs
+% WOmodelFun takes the inputs to the WO plant and calculate the outputs
 % --------
 % u         1-by-3      Inputs to the WO CSTR (FA,FB,TR)
 % yGuess    1-by-6      Guess of outputs
