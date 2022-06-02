@@ -11,8 +11,6 @@ function [uk,yk,conk,objk] = runWO2_MA(varargin)
 
 %% 0. Deal with varargin
 % add path
-addpath('../../plotFunctions/');
-addpath('../../plotFunctions/colours/');
 addpath('../WO_functions/')
 
 % default values
@@ -103,10 +101,15 @@ objk(k,:) = objFun(uk(k,:),yk(k,:));
 conk(k,:) = conFun(uk(k,:),yk(k,:));
 
 %% 3. Run MA
-fprintf('\nRunning standard MA\n')
-fprintf('%4s%7s%8s%10s%9s%8s\n','n','F_A','F_B','obj','con','time')
+% set-up print 
+fprintf('\nRunning standard MA - 2var WO\n')
+fprintf('%4s%7s%8s%10s%9s%8s\n','n','F_A','F_B','obj','X_G','time')
+
+% print initial
 uR = uRest(uk(k,:));
-fprintf('%4i %7.3f %7.3f %9.3f %8.4f %7.3f\n',k,uR(1),uR(2),objk(k),conk(k)+0.08,toc-t)
+fprintf('%4i %7.3f %7.3f %9.3f %8.4f\n',k,uR(1),uR(2),objk(k),conk(k)+0.08)
+
+% start timer
 tic
 t = 0;
 
@@ -157,6 +160,8 @@ for k = 2:kmax
     t=toc;
 end
 
+% total time
+fprintf('Total time: %7.3fs\n',t)
 %% 4. Embedded functions
     function out = optFun(u,yFun,outFun)
         % calculates the optimization function (efficient)

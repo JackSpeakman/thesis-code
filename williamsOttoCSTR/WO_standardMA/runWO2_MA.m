@@ -11,8 +11,6 @@ function [uk,yk,conk,objk] = runWO2_MA(varargin)
 
 %% 0. Deal with varargin
 % add path
-addpath('../../plotFunctions/');
-addpath('../../plotFunctions/colours/');
 addpath('../WO_functions/')
 
 % default values
@@ -103,7 +101,7 @@ objk(k,:) = objFun(uk(k,:),yk(k,:));
 conk(k,:) = conFun(uk(k,:),yk(k,:));
 
 %% 3. Run MA
-% set up print
+% set-up print 
 fprintf('\nRunning standard MA - 2var WO\n')
 fprintf('%4s%7s%8s%10s%9s%8s\n','n','F_A','F_B','obj','X_G','time')
 

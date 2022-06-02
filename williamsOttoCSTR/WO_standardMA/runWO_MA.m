@@ -10,6 +10,9 @@ function [uk,yk,conk,objk] = runWO_MA(varargin)
 % ------------
 
 %% 0. Deal with varargin
+% add path
+addpath('../WO_functions/')
+
 % default values
 filterFun = 0.5;    % Default filter function
 kmax = 21;          % Number of iterations
@@ -83,7 +86,7 @@ K = zeros(kmax,1);
 
 %% 2. Find starting point
 k = 1;
-fminopts = optimoptions('fmincon','Display','final','Algorithm','interior-point','MaxFunctionEvaluations',20000,'MaxIterations',10000);
+fminopts = optimoptions('fmincon','Display','off','Algorithm','interior-point','MaxFunctionEvaluations',20000,'MaxIterations',10000);
 
 uk(k,:) = fmincon(@(u)objFun(u,model(u,0)),uGuess,[],[],[],[],umin,umax,...
     @(u)deal(conFun(u,model(u,0)),[]),fminopts);
@@ -93,6 +96,17 @@ objk(k,:) = objFun(uk(k,:),yk(k,:));
 conk(k,:) = conFun(uk(k,:),yk(k,:));
 
 %% 3. Run MA
+% set-up print 
+fprintf('\nRunning standard MA - 2var WO\n')
+fprintf('%4s%7s%8s%8s%10s%9s%8s\n','n','F_A','F_B','T_R','obj','X_G','time')
+
+% print initial
+fprintf('%4i %7.3f %7.3f %7.3f %9.3f %8.4f\n',k,uk(k,1),uk(k,2),uk(k,3),objk(k),conk(k)+0.08)
+
+% start timer
+tic
+t = 0;
+
 for k = 2:kmax
     % gradients    
     dobjpdu = zeros(3,1);
@@ -121,7 +135,11 @@ for k = 2:kmax
     xObj = @(u)(optFun(u,@(u)model(u,0),objFun)+(dobjpdu-dobjdu)'*(u-uk(k-1,:))');
     xCon = @(u)(optFun(u,@(u)model(u,0),conFun)+mod+...
         permute(sum(repmat((u-uk(k-1,:))',1,n_th,n_c).*(dconpdu-dcondu),1),[2,3,1]));
-    xQ = @(u)(quadFun((u-uk(k-1,:)),Qk,conk(k-1,:),dconpdu));
+    if Qk~=0
+        xQ = @(u)(quadFun((u-uk(k-1,:)),Qk,conk(k-1,:),dconpdu));
+    else
+        xQ = @(u)(-1);
+    end
     
     % new optimum
     uOpt = fmincon(@(u)xObj(u),uGuess,[],[],[],[],umin,umax,...
@@ -161,7 +179,13 @@ for k = 2:kmax
     objk(k,:) = objFun(uk(k,:),yk(k,:));
     conk(k,:) = conFun(uk(k,:),yk(k,:));
     
+    % print result
+    fprintf('%4i %7.3f %7.3f %7.3f %9.3f %8.4f %7.3f\n',k,uk(k,1),uk(k,2),uk(k,3),objk(k),conk(k)+0.08,toc-t)
+    t=toc;
 end
+
+% total time
+fprintf('Total time: %7.3fs\n',t)
 
 %% 4. Embedded functions
     function out = optFun(u,yFun,outFun)
