@@ -97,7 +97,7 @@ conk(k,:) = conFun(uk(k,:),yk(k,:));
 
 %% 3. Run MA
 % set-up print 
-fprintf('\nRunning standard MA - 2var WO\n')
+fprintf('\nRunning standard MA - 3var WO\n')
 fprintf('%4s%7s%8s%8s%10s%9s%8s\n','n','F_A','F_B','T_R','obj','X_G','time')
 
 % print initial
