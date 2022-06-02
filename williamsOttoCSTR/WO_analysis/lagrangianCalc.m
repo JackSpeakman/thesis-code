@@ -2,8 +2,6 @@
 clear
 
 % add path
-addpath('../../plotFunctions/');
-addpath('../../plotFunctions/colours/');
 addpath('../WO_functions/')
 
 %% 1. Find plant optimum
