@@ -47,7 +47,6 @@ uk = [3.45,10.5];
 up = fmincon(@(u)objFun(u,plant(u)),uGuess,[],[],[],[],umin,umax,...
     @(u)deal(conFun(u,plant(u)),[]),fminopts);
 
-
 %% 4. Plot
 close all
 
