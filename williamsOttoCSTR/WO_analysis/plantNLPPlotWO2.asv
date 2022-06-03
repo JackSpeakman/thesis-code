@@ -23,7 +23,6 @@ obj = zeros(size(uu1));
 con = zeros([size(uu1),2]);
 
 %% 2. Run plant
-tic
 for i = 1:n_u
     for ii = 1:n_u
         % run plat at each u
@@ -35,7 +34,25 @@ for i = 1:n_u
         con(i,ii,:) = conFun(u,y);
     end
 end
-toc
+
 %% 3. Plot
-tic
-fimplicit(
+% create figure
+fig = figure;
+ax = axes;
+hold on
+xlim([umin(1),umax(1)])
+ylim([umin(2),umax(1)])
+
+% plot contours for data
+[a1,b] = contour(ax,uu1,uu2,con(:,:,1),[0,0]);
+delete(b)
+[a2,b] = contour(ax,uu1,uu2,con(:,:,2),[0,0]);
+delete(b)
+
+% plot patches
+patch('XData',[umax(1),a1(1,2:end),umin(1)],'YData',[umin(2),a1(2,2:end),umin(2)],...
+    'facecolor','r','facealpha',0.2,'linestyle','none')
+patch('XData',[umax(1),a2(1,2:end),umin(1)],'YData',[umin(2),a2(2,2:end),umin(2)],...
+    'facecolor','r','facealpha',0.2,'linestyle','none')
+
+
