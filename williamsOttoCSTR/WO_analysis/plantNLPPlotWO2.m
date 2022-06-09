@@ -1,4 +1,5 @@
 % Plots the characteristic functions for the plant of the 2-var WO CSTR
+addpath('../WO_functions/')
 
 %% 1. Set-up variables
 % grid space
