@@ -150,12 +150,12 @@ fprintf('%6.2f %6.2f %6.2f\n',L)
 th = linspace(0,2*pi,101);
 
 v = dplant(:,1)/norm(dplant(:,1));
-dv1 = (v([3,1,2])-v([2,3,1]));
+dv1 = (v([3,1,2])-v([2,3,1]));% orthogonal vector 1 
 dv1 = dv1/norm(dv1);
 dv2 = cross(dv1,v);
 dv2 = dv2/norm(dv2);
 
-dv = dv1*sin(th).^2+dv2*cos(th).^2;
+dv = dv1*sin(th)+dv2*cos(th);
 
 SOSC = zeros(1,numel(th));
 SOSCp = zeros(1,numel(th));
