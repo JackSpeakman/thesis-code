@@ -36,10 +36,10 @@ k2 = k_0(2)*exp(-E(2)/(T+273.15)); %1/s
 
 %% mass balances
 optionX = optimoptions('fsolve','Display','off','OptimalityTolerance',1e-12,'StepTolerance',1e-12,'FunctionTolerance',1e-12);
-[ySol,~,flag] = fsolve(@(y)WOModelODE(y,k1,k2,M,F_Ain,F_Bin,F), yGuess, optionX);
+[ySol,~,flag] = fsolve(@(y)WOmodelODE(y,k1,k2,M,F_Ain,F_Bin,F), yGuess, optionX);
 
 if any(ySol<0 | ySol>1) % bad solve - try new yGuess
-    ySol = fsolve(@(y)WOModelODE(y,k1,k2,M,F_Ain,F_Bin,F), [0.5,0.5,0,0,0,0], optionX);
+    ySol = fsolve(@(y)WOmodelODE(y,k1,k2,M,F_Ain,F_Bin,F), [0.5,0.5,0,0,0,0], optionX);
 end
     
 if flag ~= 1
