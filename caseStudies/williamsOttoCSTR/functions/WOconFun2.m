@@ -7,6 +7,6 @@ function [con] = WOconFun2(~,y)
 % con       1-by-1      constraint function value
 % --------
 
-con = [y(:,6) - 0.08, y(:,5)-y(:,2)+0.15];
+con = [y(:,6) - 0.08, y(:,5)-y(:,2)+0.16];
 
 end

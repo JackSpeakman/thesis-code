@@ -136,10 +136,10 @@ for k = 2:kmax
         ypi_neg = plant(u_neg);
         
         % get gradients
-        dobjpdu(i) =     (objFun(u_pos,ypi_pos)-objFun(u_neg,ypi_neg))/(2*du(i,i));
+        dobjpdu(i) =   (objFun(u_pos,ypi_pos)-objFun(u_neg,ypi_neg))/(2*du(i,i));
         dconpdu(i,:) = (conFun(u_pos,ypi_pos)-conFun(u_neg,ypi_neg))/(2*du(i,i));
         
-        dobjdu(i) =     (objFun(u_pos,ymi_pos)-objFun(u_neg,ymi_neg))/(2*du(i,i));
+        dobjdu(i) =   (objFun(u_pos,ymi_pos)-objFun(u_neg,ymi_neg))/(2*du(i,i));
         dcondu(i,:) = (conFun(u_pos,ymi_pos)-conFun(u_neg,ymi_neg))/(2*du(i,i));
     end
     

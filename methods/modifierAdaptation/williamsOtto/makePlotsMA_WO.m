@@ -104,7 +104,6 @@ plot(ax(3),[0,kmax-1],[uOptp(1),uOptp(1)],mp{:})
 plot(ax(4),[0,kmax-1],[uOptp(2),uOptp(2)],mp{:})
 plot(ax(5),[0,kmax-1],[uOptp(3),uOptp(3)],mp{:})
 
-
 drawnow
 
 %% 1. Standard MA

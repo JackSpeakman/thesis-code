@@ -11,38 +11,38 @@ function [uk,yk,conk,objk] = runWCMA_WO(varargin)
 
 %% 0. Deal with varargin
 % default values
-filterFun = 0.5;    % Default filter function
-kmax = 31;          % Number of iterations
-th = [0,0;70,160;-70,160;70,-160;-70,-160]*3;         % Default parameters
-th_nom = [0,0];     % Default nominal parameters
-Qk = 0;             % Use Qk or not (value of epsilon if yes)
-
-conFun = @(u,y)WOconFun(u,y);   % constraint function
+filter = 0.5;                       % Default filter function
+kmax = 31;                          % Number of iterations
+th_nom = [0,0];                     % Default nominal parameters
+th = [0,0; 70,160; -70,160; 70,-160; -70,-160]*3;   % Default parameters
+conFun = @(u,y)WOconFun(u,y);       % constraint function
+u0 = [];                            % starting point
 
 % replace certain values
 n_in = floor(numel(varargin));
 for i = 1:2:n_in
-    if strcmp(varargin{i},'K')
-        filterFun = varargin{i+1};
-    elseif strcmp(varargin{i},'kmax')
-        kmax = varargin{i+1};
-    elseif strcmp(varargin{i},'th')
-        th = varargin{i+1};
-    elseif strcmp(varargin{i},'th_nom')
-        th_nom = varargin{i+1};
-    elseif strcmp(varargin{i},'conFun')
-        conFun = varargin{i+1};
-    elseif strcmp(varargin{i},'Qk')
-        Qk = varargin{i+1};
+    switch varargin{i}
+        case 'filter'
+            filter = varargin{i+1};
+        case 'kmax'
+            kmax = varargin{i+1};
+        case 'th'
+            th = varargin{i+1};
+        case 'th_nom'
+            th_nom = varargin{i+1};
+        case 'conFun'
+            conFun = varargin{i+1};
+        case 'startingPoint'
+            u0 = varargin{i+1};
     end
 end
 
-% replace K with a function
-if isnumeric(filterFun)
-    filterFun = @(~,~,~)(filterFun);
-end
+% print name
+fprintf('\n#### Williams Otto - %s - %4.2f ####\n\n','Worst Case MA',filter);
 
 %% 1. Set-up parameters
+tic
+
 % global variables
 u_last = [0,0,0];
 y_last = [0,0,0,0,0,0];
@@ -65,7 +65,6 @@ n_c = prod(size_c);
 if size_c(1) ~= 1
     conFun = @(u,y)(conFun(u,y)');
 end
-
 
 % optimization limits
 umin = [3,6,80];
@@ -92,6 +91,18 @@ objk(k,:) = objFun(uk(k,:),yk(k,:));
 conk(k,:) = conFun(uk(k,:),yk(k,:));
 
 %% 3. Run MA
+% print initial condition
+t0 = toc;
+fprintf('Beginning Worst Case MA run\n')
+if n_c == 1
+    fprintf('%8s %10s %10s %10s %10s %10s %8s %10s [s]\n','k','F_A','F_B','T_R','Cost','Con','Flag','Time');
+    fprintf('%8i %10.3f %10.3f %10.3f %10.4f %10.4f\n',k,uk(k,1),uk(k,2),uk(k,3),objk(k),conk(k,1))
+elseif n_c == 2
+    fprintf('%8s %10s %10s %10s %10s %10s %10s %8s %10s [s]\n','k','F_A','F_B','T_R','Cost','Con 1','Con 2','Flag','Time');
+    fprintf('%8i %10.3f %10.3f %10.3f %10.4f %10.4f %10.4f\n',k,uk(k,1),uk(k,2),uk(k,3),objk(k),conk(k,1),conk(k,2))
+end
+
+% run WCMA
 for k = 2:kmax
     % gradients
     dobjpdu = zeros(3,1);
@@ -127,20 +138,25 @@ for k = 2:kmax
     xObj = @(u)(WCoptFun(u,model,objFun)+modO+(dobjpdu-dobjdu)'*(u-uk(k-1,:))');
     xCon = @(u)(WCoptFun(u,model,conFun)+modC+...
         permute(sum(repmat((u-uk(k-1,:))',1,n_th,n_c).*(dconpdu-dcondu),1),[2,3,1]));
-    xQ = @(u)(quadFun((u-uk(k-1,:)),Qk,conk(k-1,:),dconpdu));
     
     % new optimum
-    uOpt = fminimax(@(u)xObj(u),uGuess,[],[],[],[],umin,umax,...
-        @(u)deal([xCon(u);xQ(u)],[]),fminimaxopts);
+    [uOpt,~,~,flag] = fminimax(@(u)xObj(u),uGuess,[],[],[],[],umin,umax,...
+        @(u)deal([xCon(u)],[]),fminimaxopts);
     
-    % new operating point
-    K(k) = filterFun(uk(k-1,:),uOpt,@(u)xCon(u)./norm(conk(k-1,:)));
-    uk(k,:) = uk(k-1,:)*(1-K(k)) + uOpt*K(k);
+    % apply filter
+    uk(k,:) = uk(k-1,:)*(1-filter) + uOpt*filter;
     
     yk(k,:) = plant(uk(k,:));
     objk(k,:) = objFun(uk(k,:),yk(k,:));
     conk(k,:) = conFun(uk(k,:),yk(k,:));
-    
+        % print result
+    t1 = toc;
+    if n_c == 1
+        fprintf('%8i %10.3f %10.3f %10.3f %10.4f %10.4f %8i %10.3f\n',k,uk(k,1),uk(k,2),uk(k,3),objk(k),conk(k,1),flag,t1-t0)
+    elseif n_c == 2
+        fprintf('%8i %10.3f %10.3f %10.3f %10.4f %10.4f %10.4f %8i %10.3f\n',k,uk(k,1),uk(k,2),uk(k,3),objk(k),conk(k,1),conk(k,2),flag,t1-t0)
+    end
+    t0 = t1;
 end
 
 %% 4. Embedded functions

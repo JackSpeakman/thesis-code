@@ -1,48 +1,64 @@
-% script to run robust MA on WO and plot results
-clearvars -except fig
-if exist('fig','var') && isvalid(fig)
-    set(0,'CurrentFigure',fig);
-    clf
-else
-    fig = figure;
-end
+% script to run worst case MA on WO and plot results
+clearvars -except WCMAfig
+
 % add path
-addpath('../General Functions/');
-addpath('../General Functions/Plot/');
+addpath('../../../plotFunctions/');
+addpath('../../../plotFunctions/colours/');
+addpath('../../../caseStudies/williamsOttoCSTR/functions/')
+addpath('../../modifierAdaptation/williamsOtto/')
 
 % set up constraint
-conFun = @(u,y)([y(:,6)-0.08,y(:,5)-y(:,2)+0.16]);
+conFun = @(u,y)WOconFun2(u,y);
 con0 = conFun([],zeros(1,6));
+
+n_c = numel(con0);
+
+% create figures
+if exist('WCMAfig','var') && all(isvalid(WCMAfig)) && numel(WCMAfig) == 4+n_c
+    all_figs = findobj(0, 'type', 'figure');
+    delete(setdiff(all_figs, WCMAfig));
+    for i = 1:numel(WCMAfig)
+        clf(WCMAfig(i))
+    end
+else
+    for i = 1:(4+n_c)
+        WCMAfig(i) = figure;
+    end
+end
 
 % set up number of iterations
 kmax = 21;
 
 % set up figure
-tiledlayout(3,3,'Padding','compact','TileSpacing','compact');
-for i = 1:3
-    for j = 1:3
-        ax(i,j) = nexttile;
-        hold on
-        xlim(ax(i,j),[0,kmax-1]);
-        
-        fixAxis(fig,ax(i,j),'linewidth',2.5)
-        set(ax(i,j),'Layer','Top')
-    end
+set(0,'CurrentFigure',WCMAfig(1))
+
+for i = 1:numel(WCMAfig)
+    set(0,'CurrentFigure',WCMAfig(i))
+    ax(i) = axes(WCMAfig(i));
+    hold(ax(i),'on')
+    xlim(ax(i),[0,kmax-1]);
+    
+    fixAxis(WCMAfig(i),ax(i),'linewidth',2.5)
+    set(ax(i),'Layer','Top')
+    
+    set(WCMAfig(i),'Position',[50+50*i,50+50*i,800,600])
+    xlabel(ax(i),'Iteration, k','Interpreter','latex')
+
 end
 
-set(fig,'Position',[-3800,300,1800,1000])
+set(WCMAfig(1),'Position',[50+50*i,-150+50*i,800,600])
+set(WCMAfig(2),'Position',[50+50*i,-150+50*i,800,600])
+set(WCMAfig(3),'Position',[50+50*i,-150+50*i,800,600])
+set(WCMAfig(n_c+2),'Position',[50+50*i,-150+50*i,800*2/3,600*3/4])
+set(WCMAfig(n_c+3),'Position',[50+50*i,-150+50*i,800*2/3,600*3/4])
+set(WCMAfig(n_c+4),'Position',[50+50*i,-150+50*i,800*2/3,600*3/4])
 
-for j = 1:3
-    xlabel(ax(3,j),'Iteration, k','Interpreter','latex')
-end
-
-title(ax(1,1),'\bf{(a) WCMA}','Interpreter','latex')
-title(ax(1,2),'\bf{(b) PMAi}','Interpreter','latex')
-title(ax(1,3),'\bf{(c) PMAj}','Interpreter','latex')
-
-ylabel(ax(1,1),'$$J$$','Interpreter','latex')
-ylabel(ax(2,1),'$$X_G$$','Interpreter','latex')
-ylabel(ax(3,1),'$$X_B - X_E$$','Interpreter','latex')
+ylabel(ax(1),'$J$','Interpreter','latex')
+ylabel(ax(2),'$X_G$','Interpreter','latex')
+ylabel(ax(3),'$X_B-X_E$','Interpreter','latex')
+ylabel(ax(n_c+2),'$F_A$','Interpreter','latex')
+ylabel(ax(n_c+3),'$F_B$','Interpreter','latex')
+ylabel(ax(n_c+4),'$T_R$','Interpreter','latex')
 
 % find plant optimum
 uGuess = [3.9,9.3,91];
@@ -60,138 +76,110 @@ yOptp = plant(uOptp);
 objOptp = objFun(uOptp,yOptp);
 conOptp = conFun(uOptp,yOptp);
 
-
 % legend stuff
 cp1 = [0.7,0.7,0.7];
-cp2 = [1,0,0];
-cp3 = [0,0,1];
-cp4 = [0.1,0.7,0.3];
-
 mp1 = {'^-','Color',cp1,'MarkerSize',5,'LineWidth',2.5,'MarkerFaceColor',cp1};
+
+cp2 = [1,0,0];
 mp2 = {'o-','Color',cp2,'MarkerSize',5,'LineWidth',2.5,'MarkerFaceColor',cp2};
-mp3 = {'s-','Color',cp3,'MarkerSize',5,'LineWidth',2.5,'MarkerFaceColor',cp3};
-mp4 = {'d-','Color',cp4,'MarkerSize',5,'LineWidth',2.5,'MarkerFaceColor',cp4};
 
 cr = [1,0.8,0.8];
 ma = {'LineStyle','none','FaceColor',cr,'ShowBaseLine',0};
 mp = {'k--','LineWidth',2.5};
 
-plot(ax(3,2),-1,-1,mp1{:});
-plot(ax(3,2),-1,-1,mp2{:});
-plot(ax(3,2),-1,-1,mp3{:});
-plot(ax(3,2),-1,-1,mp4{:});
-plot(ax(3,2),-1,-1,mp{:});
-area(ax(3,2),-1,-1,ma{:});
-
+for i = 1:numel(WCMAfig)
+    plot(ax(i),-1,-1,mp1{:});
+    plot(ax(i),-1,-1,mp{:});
+    area(ax(i),-1,-1,ma{:});
+end
 
 % plant plot
-for j = 1:3
-    ylim(ax(1,j),[100,220])
-    yticks(ax(1,j),100:20:220)
-    ylim(ax(2,j),[0.045,0.09])
-    yticks(ax(2,j),0.05:0.01:0.09)
-    ylim(ax(3,j),[0.14,0.26])
-    yticks(ax(3,j),0.14:0.02:0.26)
-    
-    area(ax(2,j),[0,kmax-1],-[con0(1),con0(1)],'BaseValue',1,ma{:})
-    area(ax(3,j),[0,kmax-1],[con0(2),con0(2)],'BaseValue',-1,ma{:})
+ylim(ax(1),[100,220])
+yticks(ax(1),100:20:220)
+ylim(ax(2),[0.045,0.09])
+yticks(ax(2),0.05:0.01:0.09)
+ylim(ax(3),[0.14,0.26])
+yticks(ax(3),0.14:0.02:0.26)
+ylim(ax(n_c+2),[3,4.5])
+yticks(ax(n_c+2),3:0.5:4.5)
+ylim(ax(n_c+3),[6,11])
+yticks(ax(n_c+3),6:11)
+ylim(ax(n_c+4),[80,105])
+yticks(ax(n_c+4),80:5:105)
 
-    plot(ax(1,j),[0,kmax-1],-[objOptp,objOptp],mp{:})
-    plot(ax(2,j),[0,kmax-1],conOptp(1)-[con0(1),con0(1)],mp{:})
-    plot(ax(3,j),[0,kmax-1],-conOptp(2)+[con0(2),con0(2)],mp{:})
+% obj
+plot(ax(1),[0,kmax-1],-[objOptp,objOptp],mp{:})
+
+% con
+area(ax(2),[0,kmax-1],-[con0(1),con0(1)],'BaseValue',1,ma{:})
+plot(ax(2),[0,kmax-1],conOptp(1)-[con0(1),con0(1)],mp{:})
+if n_c == 2
+    area(ax(3),[0,kmax-1],[con0(2),con0(2)],'BaseValue',0,ma{:})
+    plot(ax(3),[0,kmax-1],[con0(2),con0(2)]-conOptp(2),mp{:})
 end
+
+% inputs
+plot(ax(n_c+2),[0,kmax-1],[uOptp(1),uOptp(1)],mp{:})
+plot(ax(n_c+3),[0,kmax-1],[uOptp(2),uOptp(2)],mp{:})
+plot(ax(n_c+4),[0,kmax-1],[uOptp(3),uOptp(3)],mp{:})
 
 drawnow
 
 %% 1. Standard MA
-% add path
-addpath('../Standard MA/');
-addpath('../Case Studies/Willaims Otto Case/');
+% set-up functions
+yGuess = [0.08746, 0.38962, 0, 0.29061, 0.10945, 0.10754];
 
-kmax = 21;
 % run
-[ukMA,ykMA,conkMA,objkMA] = runWO_MA('K',0.5,'kmax',kmax,...
-    'conFun',conFun);
+[ukMA,ykMA,conkMA,objkMA] = runMA_WO('filter',0.5,'kmax',kmax,'conFun',conFun,'num_inputs',3);
 
 % plot
+plot(ax(1),0:(kmax-1),-objkMA,mp1{:});
+plot(ax(2),0:(kmax-1),conkMA(:,1)-con0(1),mp1{:});
+plot(ax(3),0:(kmax-1),con0(n_c)-conkMA(:,n_c),mp1{:});
+plot(ax(n_c+2),0:(kmax-1),ukMA(:,1),mp1{:});
+plot(ax(n_c+3),0:(kmax-1),ukMA(:,2),mp1{:});
+plot(ax(n_c+4),0:(kmax-1),ukMA(:,3),mp1{:});
 
-for j = 1:3
-    plot(ax(1,j),0:(kmax-1),-objkMA,mp1{:});
-    plot(ax(2,j),0:(kmax-1),conkMA(:,1)-con0(1),mp1{:});
-    plot(ax(3,j),0:(kmax-1),-conkMA(:,2)+con0(2),mp1{:});
+drawnow
+
+%% 2. Worst case MA
+% set-up functions
+yGuess = [0.08746, 0.38962, 0, 0.29061, 0.10945, 0.10754];
+
+% parameters
+th = [0,0; 70,160; -70,160; 70,-160; -70,-160]*3;
+
+% run
+[ukWCMA,ykWCMA,conkWCMA,objkWCMA] = runWCMA_WO('filter',1,'kmax',kmax,...
+    'conFun',conFun,'th',th);
+
+% plot
+plot(ax(1),0:(kmax-1),-objkWCMA,mp2{:});
+plot(ax(2),0:(kmax-1),conkWCMA(:,1)-con0(1),mp2{:});
+plot(ax(3),0:(kmax-1),con0(n_c)-conkWCMA(:,n_c),mp2{:});
+plot(ax(n_c+2),0:(kmax-1),ukWCMA(:,1),mp2{:});
+plot(ax(n_c+3),0:(kmax-1),ukWCMA(:,2),mp2{:});
+plot(ax(n_c+4),0:(kmax-1),ukWCMA(:,3),mp2{:});
+
+drawnow
+
+%% 5. Save figures
+saveas(WCMAfig(1),'plots\WCMAobj_WO.eps','epsc')
+saveas(WCMAfig(1),'plots\WCMAobj_WO.fig','fig')
+
+saveas(WCMAfig(2),'plots\WCMAcon_WO.eps','epsc')
+saveas(WCMAfig(2),'plots\WCMAcon_WO.fig','fig')
+
+if n_c == 2
+    saveas(WCMAfig(3),'plots\WCMAcon2_WO.eps','epsc')
+    saveas(WCMAfig(3),'plots\WCMAcon2_WO.fig','fig')
 end
-drawnow
 
-%% 2. Worst-Case MA
-% set theta
-th = [0,0;70,160;-70,160;70,-160;-70,-160]*3; 
+saveas(WCMAfig(n_c+2),'plots\WCMAu1_WO.eps','epsc')
+saveas(WCMAfig(n_c+2),'plots\WCMAu1_WO.fig','fig')
 
-% set WC filter
-n_r = 21;
-filterWC = @(a,b,c)newFilter(a,b,c,n_r,1);
+saveas(WCMAfig(n_c+2),'plots\WCMAu2_WO.eps','epsc')
+saveas(WCMAfig(n_c+2),'plots\WCMAu2_WO.fig','fig')
 
-% set quadratic
-Qk = [0.000001,0.000001,0.000001];
-
-% run
-[ukWC,ykWC,conkWC,objkWC] = runWO_WCMA('K',filterWC,'kmax',kmax,...
-    'conFun',conFun,'th',th,'Qk',Qk);
-
-% plot
-plot(ax(1,1),0:(kmax-1),-objkWC,mp2{:});
-plot(ax(2,1),0:(kmax-1),conkWC(:,1)-con0(1),mp2{:});
-plot(ax(3,1),0:(kmax-1),-conkWC(:,2)+con0(2),mp2{:});
-
-drawnow
-
-%% 3. PMA individual
-% generate theta
-rng(100)
-n_th = 100;
-mu = [0,0];
-s = [70,160];
-corr = 0.85;
-sigma = [s(1)*s(1),corr*s(2)*s(1);corr*s(1)*s(2),s(2)*s(2)];
-th = [0,0;mvnrnd(mu,sigma,n_th-1)];
-
-% set PMA filter
-n_r = 21;
-pK = 0.9;
-filterPMA = @(a,b,c)newFilter(a,b,c,n_r,pK);
-
-% set probability
-pj = 0.9;
-
-% run
-[ukPi,ykPi,conkPi,objkPi] = runWO_PMAi('K',filterPMA,'kmax',kmax,...
-    'conFun',conFun,'th',th,'Qk',Qk,'p',pj);
-
-% plot
-plot(ax(1,2),0:(kmax-1),-objkPi,mp3{:});
-plot(ax(2,2),0:(kmax-1),conkPi(:,1)-con0(1),mp3{:});
-plot(ax(3,2),0:(kmax-1),-conkPi(:,2)+con0(2),mp3{:});
-
-drawnow
-
-%% 4. PMA joint
-% probability
-p = 0.9;
-
-% run
-[ukPj,ykPj,conkPj,objkPj] = runWO_PMAj('K',filterPMA,'kmax',kmax,...
-    'conFun',conFun,'th',th,'Qk',Qk,'p',p);
-
-% plot
-plot(ax(1,3),0:(kmax-1),-objkPj,mp4{:});
-plot(ax(2,3),0:(kmax-1),conkPj(:,1)-con0(1),mp4{:});
-plot(ax(3,3),0:(kmax-1),-conkPj(:,2)+con0(2),mp4{:});
-
-drawnow
-
-%% 5. Save figure
-% legend
-leg = {'Standard MA\quad','WCMA\quad','PMAi\quad','PAMj\quad','Plant Optimum\quad','Infeasible Region'};
-legend(ax(3,2),leg,'Location','southoutside','Orientation','horizontal','Interpreter','latex');
-
-saveas(fig,'Plots\WO_full.eps','epsc')
-saveas(fig,'Plots\WO_full.fig','fig')
+saveas(WCMAfig(n_c+2),'plots\WCMAu3_WO.eps','epsc')
+saveas(WCMAfig(n_c+2),'plots\WCMAu3_WO.fig','fig')
