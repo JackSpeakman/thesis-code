@@ -1,4 +1,4 @@
-% makes the plots for standard MA used in the literature review
+% makes the plots for standard MA on WO used in the literature review
 clearvars -except MAfig
 
 if exist('MAfig','var') && all(isvalid(MAfig))
@@ -29,7 +29,7 @@ kmax = 21;
 set(0,'CurrentFigure',MAfig(1))
 
 for i = 1:numel(MAfig)
-    set(0,'CurrentFigure',MAfig(1))
+    set(0,'CurrentFigure',MAfig(i))
     ax(i) = axes(MAfig(i));
     hold(ax(i),'on')
     xlim(ax(i),[0,kmax-1]);
