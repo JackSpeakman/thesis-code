@@ -8,7 +8,7 @@ addpath('../../../caseStudies/diehlDistillationColumn/analysis/')
 
 %% 0.a Set-up
 r0 = [70.001,85];   % starting point
-k_max = 3;          % number of iterations
+k_max = 21;          % number of iterations
 Ns = 14;            % number of stripping trays
 Nr = 7:11;          % number of rectifying trays
 mu = 3;             % which rectifying tray is nominal
@@ -24,7 +24,7 @@ m2_MA = {'--o','color',c_MA,'linewidth',3,'markersize',7,'MarkerFaceColor',c_MA}
 
 %% 1.a Run standard MA
 % run at K=0.9;
-[rk_MA1,uk_MA1,yk_MA1,objk_MA1,conk_MA1] = runMA_DCshort('r_start',r0,'k_max',k_max,'Ns',Ns,'Nr',Nr(mu),'filter',0.9);
+[rk_MA1,uk_MA1,yk_MA1,objk_MA1,conk_MA1] = runMA_DCshort('r_start',r0,'k_max',k_max,'Ns',Ns,'Nr',Nr(mu),'filter',0.6);
 
 %% 1.b Plot standard MA
 if exist('fig','var')
@@ -104,7 +104,7 @@ saveas(fig{3},'plots/MAcon2_DCshort.eps','epsc')
 
 % plot plant stuff
 plotPlantContour
-saveas(figrr,'rr_Plant.eps','epsc')
+saveas(figrr,'plots/rr_Plant.eps','epsc')
 
 % Remove contour
 for i = 1:numel(pObjContour)

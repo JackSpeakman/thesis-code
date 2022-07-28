@@ -1,5 +1,5 @@
-function [uk,yk,conk,objk] = runWCMA_WO(varargin)
-% runs worst-case MA on the WO CSTR.
+function [uk,yk,conk,objk] = runPMAi_WO(varargin)
+% runs probabilistic MA (individual) on the WO CSTR.
 % ------------
 % varargin          cell of inputs
 %
@@ -17,6 +17,7 @@ th_nom = [0,0];                     % Default nominal parameters
 th = [0,0; 70,160; -70,160; 70,-160; -70,-160]*3;   % Default parameters
 conFun = @(u,y)WOconFun(u,y);       % constraint function
 u0 = [];                            % starting point
+p = 0.9;                            % chance constraint [P(G_i(u)<=0) > p]
 
 % replace certain values
 n_in = floor(numel(varargin));
@@ -34,11 +35,13 @@ for i = 1:2:n_in
             conFun = varargin{i+1};
         case 'startingPoint'
             u0 = varargin{i+1};
+        case 'constraintChance'
+            p = varargin{i+1};
     end
 end
 
 % print name
-fprintf('\n#### Williams Otto - %s - %4.2f ####\n\n','Worst Case MA',filter);
+fprintf('\n#### Williams Otto - %s - %4.2f ####\n\n','Probabilistic MA (individual)',filter);
 
 %% 1. Set-up parameters
 tic
@@ -46,6 +49,7 @@ tic
 % global variables
 u_last = [0,0,0];
 y_last = [0,0,0,0,0,0];
+thi_last = [0];
 
 % WO functions
 uGuess = [3.9,9.3,91];
@@ -80,7 +84,6 @@ conk = zeros(kmax,n_c);
 %% 2. Find starting point
 k = 1;
 fminconopts = optimoptions('fmincon','Display','off');
-fminimaxopts = optimoptions('fminimax','Display','off','MaxFunctionEvaluations',10000,'MaxIterations',1000);
 
 % check if initial point is supplied
 if isempty(u0)
@@ -107,7 +110,7 @@ elseif n_c == 2
     fprintf('%8i %10.3f %10.3f %10.3f %10.4f %10.4f %10.4f\n',k,uk(k,1),uk(k,2),uk(k,3),objk(k),conk(k,1),conk(k,2))
 end
 
-% run WCMA
+% run PMAi
 for k = 2:kmax
     % gradients
     dobjpdu = zeros(3,1);
@@ -139,13 +142,17 @@ for k = 2:kmax
         modC(j,:) = conk(k-1,:) - conFun(uk(k-1,:),model(uk(k-1,:),j));
     end
     
-    xObj = @(u)(WCoptFun(u,model,objFun)+modO+(dobjpdu-dobjdu)'*(u-uk(k-1,:))');
-    xCon = @(u)(WCoptFun(u,model,conFun)+modC+...
+    xObj = @(u)(WCoptFun(u,model,objFun,1:n_th)+modO+(dobjpdu-dobjdu)'*(u-uk(k-1,:))');
+    xCon = @(u)(WCoptFun(u,model,conFun,1:n_th)+modC+...
         permute(sum(repmat((u-uk(k-1,:))',1,n_th,n_c).*(dconpdu-dcondu),1),[2,3,1]));
     
+    % prob modified functions
+    pObj = @(u)probCalc(xObj(u),0.5);
+    pCon = @(u)probCalc(xCon(u),p);
+    
     % new optimum
-    [uOpt,~,~,flag] = fminimax(@(u)xObj(u),uGuess,[],[],[],[],umin,umax,...
-        @(u)deal([xCon(u)],[]),fminimaxopts);
+    [uOpt,~,flag] = fmincon(@(u)pObj(u),uGuess,[],[],[],[],umin,umax,...
+        @(u)deal([pCon(u)],[]),fminconopts);
     
     % apply filter
     uk(k,:) = uk(k-1,:)*(1-filter) + uOpt*filter;
@@ -166,18 +173,30 @@ for k = 2:kmax
 end
 
 %% 4. Embedded functions
-    function out = WCoptFun(u,yFun,outFun)
+    function out = WCoptFun(u,yFun,outFun,thi)
         % calculates the optimization function for all th (efficient)
-        if u == u_last
+        nn_th = numel(thi);
+        
+        if all(u == u_last) && all(thi == thi_last)
             y = y_last;
         else
-            y = zeros(n_th,6);
-            for jj = 1:n_th
-                y(jj,:) = yFun(u,jj);
+            y = zeros(nn_th,6);
+            for jj = 1:nn_th
+                y(jj,:) = yFun(u,thi(jj));
             end
             u_last = u;
+            thi_last = thi;
             y_last = y;
         end
         out = outFun(u,y);
+    end
+
+    function pOut = probCalc(out,rho)
+        % calculates the probabilistic value
+        mu = mean(out);
+        Sigma2 = var(out);
+        zp = sqrt(2)*(erfinv(2*rho-1));
+        pOut = mu+sqrt(Sigma2)*zp;
+        
     end
 end

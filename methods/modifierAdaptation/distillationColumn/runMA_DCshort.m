@@ -30,7 +30,7 @@ for i = 1:2:nargin
 end
 
 % print name
-fprintf('\n#### Distilation Column (short) - %s - %4.2f - %4.2f/%4.2f ####\n\n','Standard MA',filter,Ns,Nr);
+fprintf('\n#### Distilation Column (short) - %s - %4.2f - %2i/%2i ####\n\n','Standard MA',filter,Ns,Nr);
 
 %% 1. Set-up variables
 tic
