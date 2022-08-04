@@ -17,6 +17,7 @@ end
 addpath('../../../plotFunctions/');
 addpath('../../../plotFunctions/colours/');
 addpath('../../../caseStudies/williamsOttoCSTR/functions/')
+addpath('../')
 
 % set up constraint
 conFun = @(u,y)WOconFun(u,y);
@@ -110,13 +111,13 @@ drawnow
 % set-up functions
 yGuess = [0.08746, 0.38962, 0, 0.29061, 0.10945, 0.10754];
 u0 = [];                                % initial condition
-model = @(u)WOmodelFun([u],yGuess);     % model function
-plant = @(u)WOplantFun([u],yGuess);     % plant function
+model = @(u,y)WOmodelFun(u,y);     % model function
+plant = @(u)WOplantFun(u,yGuess);     % plant function
 n_u = 3;                                % number of inputs
 
 % run
-[ukMA,ykMA,conkMA,objkMA] = runMA_WO('filter',0.3,'kmax',kmax,'conFun',conFun,...
-    'startingPoint',u0,'modelFun',model,'plantFun',plant,'num_inputs',n_u);
+[ukMA,ykMA,conkMA,objkMA] = runMA('filter',0.3,'kmax',kmax,'conFun',conFun,...
+    'startingPoint',u0,'modelFun',model,'plantFun',plant);
 
 % plot
 plot(ax(1),0:(kmax-1),-objkMA,mp1{:});

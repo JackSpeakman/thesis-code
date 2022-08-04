@@ -1,5 +1,5 @@
 % script to run worst case MA on WO and plot results
-clearvars -except PMAifig
+clearvars -except PMAjfig
 
 % add path
 addpath('../../../plotFunctions/');
@@ -14,15 +14,15 @@ con0 = conFun([],zeros(1,6));
 n_c = numel(con0);
 
 % create figures
-if exist('PMAifig','var') && all(isvalid(PMAifig)) && numel(PMAifig) == 4+n_c
+if exist('PMAjfig','var') && all(isvalid(PMAjfig)) && numel(PMAjfig) == 4+n_c
     all_figs = findobj(0, 'type', 'figure');
-    delete(setdiff(all_figs, PMAifig));
-    for i = 1:numel(PMAifig)
-        clf(PMAifig(i))
+    delete(setdiff(all_figs, PMAjfig));
+    for i = 1:numel(PMAjfig)
+        clf(PMAjfig(i))
     end
 else
     for i = 1:(4+n_c)
-        PMAifig(i) = figure;
+        PMAjfig(i) = figure;
     end
 end
 
@@ -30,28 +30,28 @@ end
 kmax = 21;
 
 % set up figure
-set(0,'CurrentFigure',PMAifig(1))
+set(0,'CurrentFigure',PMAjfig(1))
 
-for i = 1:numel(PMAifig)
-    set(0,'CurrentFigure',PMAifig(i))
-    ax(i) = axes(PMAifig(i));
+for i = 1:numel(PMAjfig)
+    set(0,'CurrentFigure',PMAjfig(i))
+    ax(i) = axes(PMAjfig(i));
     hold(ax(i),'on')
     xlim(ax(i),[0,kmax-1]);
     
-    fixAxis(PMAifig(i),ax(i),'linewidth',2.5)
+    fixAxis(PMAjfig(i),ax(i),'linewidth',2.5)
     set(ax(i),'Layer','Top')
     
-    set(PMAifig(i),'Position',[50+50*i,50+50*i,800,600])
+    set(PMAjfig(i),'Position',[50+50*i,50+50*i,800,600])
     xlabel(ax(i),'Iteration, k','Interpreter','latex')
 
 end
 
-set(PMAifig(1),'Position',[50+50*i,-150+50*i,800,600])
-set(PMAifig(2),'Position',[50+50*i,-150+50*i,800,600])
-set(PMAifig(3),'Position',[50+50*i,-150+50*i,800,600])
-set(PMAifig(n_c+2),'Position',[50+50*i,-150+50*i,800*2/3,600*3/4])
-set(PMAifig(n_c+3),'Position',[50+50*i,-150+50*i,800*2/3,600*3/4])
-set(PMAifig(n_c+4),'Position',[50+50*i,-150+50*i,800*2/3,600*3/4])
+set(PMAjfig(1),'Position',[50+50*i,-150+50*i,800,600])
+set(PMAjfig(2),'Position',[50+50*i,-150+50*i,800,600])
+set(PMAjfig(3),'Position',[50+50*i,-150+50*i,800,600])
+set(PMAjfig(n_c+2),'Position',[50+50*i,-150+50*i,800*2/3,600*3/4])
+set(PMAjfig(n_c+3),'Position',[50+50*i,-150+50*i,800*2/3,600*3/4])
+set(PMAjfig(n_c+4),'Position',[50+50*i,-150+50*i,800*2/3,600*3/4])
 
 ylabel(ax(1),'$J$','Interpreter','latex')
 ylabel(ax(2),'$X_G$','Interpreter','latex')
@@ -80,14 +80,14 @@ conOptp = conFun(uOptp,yOptp);
 cp1 = [0.7,0.7,0.7];
 mp1 = {'^-','Color',cp1,'MarkerSize',5,'LineWidth',2.5,'MarkerFaceColor',cp1};
 
-cp2 = [0,0,1];
+cp2 = [0.1,0.7,0.3];
 mp2 = {'s-','Color',cp2,'MarkerSize',5,'LineWidth',2.5,'MarkerFaceColor',cp2};
 
 cr = [1,0.8,0.8];
 ma = {'LineStyle','none','FaceColor',cr,'ShowBaseLine',0};
 mp = {'k--','LineWidth',2.5};
 
-for i = 1:numel(PMAifig)
+for i = 1:numel(PMAjfig)
     plot(ax(i),-1,-1,mp1{:});
     plot(ax(i),-1,-1,mp{:});
     area(ax(i),-1,-1,ma{:});
@@ -150,36 +150,36 @@ yGuess = [0.08746, 0.38962, 0, 0.29061, 0.10945, 0.10754];
 th = [0,0; 70,160; -70,160; 70,-160; -70,-160]*3;
 
 % run
-[ukPMAi,ykPMAi,conkPMAi,objkPMAi] = runPMAi_WO('filter',1,'kmax',kmax,...
+[ukPMAj,ykPMAj,conkPMAj,objkPMAj] = runPMAj_WO('filter',1,'kmax',kmax,...
     'conFun',conFun,'th',th,'constraintChance',0.95);
 
 % plot
-plot(ax(1),0:(kmax-1),-objkPMAi,mp2{:});
-plot(ax(2),0:(kmax-1),conkPMAi(:,1)-con0(1),mp2{:});
-plot(ax(3),0:(kmax-1),con0(n_c)-conkPMAi(:,n_c),mp2{:});
-plot(ax(n_c+2),0:(kmax-1),ukPMAi(:,1),mp2{:});
-plot(ax(n_c+3),0:(kmax-1),ukPMAi(:,2),mp2{:});
-plot(ax(n_c+4),0:(kmax-1),ukPMAi(:,3),mp2{:});
+plot(ax(1),0:(kmax-1),-objkPMAj,mp2{:});
+plot(ax(2),0:(kmax-1),conkPMAj(:,1)-con0(1),mp2{:});
+plot(ax(3),0:(kmax-1),con0(n_c)-conkPMAj(:,n_c),mp2{:});
+plot(ax(n_c+2),0:(kmax-1),ukPMAj(:,1),mp2{:});
+plot(ax(n_c+3),0:(kmax-1),ukPMAj(:,2),mp2{:});
+plot(ax(n_c+4),0:(kmax-1),ukPMAj(:,3),mp2{:});
 
 drawnow
 
 %% 5. Save figures
-saveas(PMAifig(1),'plots\PMAiobj_WO.eps','epsc')
-saveas(PMAifig(1),'plots\PMAiobj_WO.fig','fig')
+saveas(PMAjfig(1),'plots\PMAjobj_WO.eps','epsc')
+saveas(PMAjfig(1),'plots\PMAjobj_WO.fig','fig')
 
-saveas(PMAifig(2),'plots\PMAicon_WO.eps','epsc')
-saveas(PMAifig(2),'plots\PMAicon_WO.fig','fig')
+saveas(PMAjfig(2),'plots\PMAjcon_WO.eps','epsc')
+saveas(PMAjfig(2),'plots\PMAjcon_WO.fig','fig')
 
 if n_c == 2
-    saveas(PMAifig(3),'plots\PMAicon2_WO.eps','epsc')
-    saveas(PMAifig(3),'plots\PMAicon2_WO.fig','fig')
+    saveas(PMAjfig(3),'plots\PMAjcon2_WO.eps','epsc')
+    saveas(PMAjfig(3),'plots\PMAjcon2_WO.fig','fig')
 end
 
-saveas(PMAifig(n_c+2),'plots\PMAiu1_WO.eps','epsc')
-saveas(PMAifig(n_c+2),'plots\PMAiu1_WO.fig','fig')
+saveas(PMAjfig(n_c+2),'plots\PMAju1_WO.eps','epsc')
+saveas(PMAjfig(n_c+2),'plots\PMAju1_WO.fig','fig')
 
-saveas(PMAifig(n_c+2),'plots\PMAiu2_WO.eps','epsc')
-saveas(PMAifig(n_c+2),'plots\PMAiu2_WO.fig','fig')
+saveas(PMAjfig(n_c+2),'plots\PMAju2_WO.eps','epsc')
+saveas(PMAjfig(n_c+2),'plots\PMAju2_WO.fig','fig')
 
-saveas(PMAifig(n_c+2),'plots\PMAiu3_WO.eps','epsc')
-saveas(PMAifig(n_c+2),'plots\PMAiu3_WO.fig','fig')
+saveas(PMAjfig(n_c+2),'plots\PMAju3_WO.eps','epsc')
+saveas(PMAjfig(n_c+2),'plots\PMAju3_WO.fig','fig')

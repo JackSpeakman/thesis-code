@@ -1,4 +1,4 @@
-function [uk,yk,conk,objk] = runPMAi_WO(varargin)
+function [uk,yk,conk,objk] = runPMAj_WO(varargin)
 % runs probabilistic MA (individual) on the WO CSTR.
 % ------------
 % varargin          cell of inputs
@@ -41,7 +41,7 @@ for i = 1:2:n_in
 end
 
 % print name
-fprintf('\n#### Williams Otto - %ivar - %s - %4.2f ####\n\n',n_u,'Probabilistic MA (individual)',filter);
+fprintf('\n#### Williams Otto - %s - %4.2f ####\n\n','Probabilistic MA (individual)',filter);
 
 %% 1. Set-up parameters
 tic
@@ -98,14 +98,25 @@ yk(k,:) = plant(uk(k,:));
 objk(k,:) = objFun(uk(k,:),yk(k,:));
 conk(k,:) = conFun(uk(k,:),yk(k,:));
 
-%% 3. Run MA
+%% 3. Run RTO
+% print initial condition
+t0 = toc;
+fprintf('Beginning Worst Case MA run\n')
+if n_c == 1
+    fprintf('%8s %10s %10s %10s %10s %10s %8s %10s [s]\n','k','F_A','F_B','T_R','Cost','Con','Flag','Time');
+    fprintf('%8i %10.3f %10.3f %10.3f %10.4f %10.4f\n',k,uk(k,1),uk(k,2),uk(k,3),objk(k),conk(k,1))
+elseif n_c == 2
+    fprintf('%8s %10s %10s %10s %10s %10s %10s %8s %10s [s]\n','k','F_A','F_B','T_R','Cost','Con 1','Con 2','Flag','Time');
+    fprintf('%8i %10.3f %10.3f %10.3f %10.4f %10.4f %10.4f\n',k,uk(k,1),uk(k,2),uk(k,3),objk(k),conk(k,1),conk(k,2))
+end
+
+% run PMAi
 for k = 2:kmax
     % gradients
     dobjpdu = zeros(3,1);
     dconpdu = zeros(3,1,n_c);
     dobjdu = zeros(3,n_th);
     dcondu = zeros(3,n_th,n_c);
-    
     
     for i = 1:3
         u = uk(k-1,:) + du(i,:);
@@ -134,24 +145,31 @@ for k = 2:kmax
     xObj = @(u)(WCoptFun(u,model,objFun,1:n_th)+modO+(dobjpdu-dobjdu)'*(u-uk(k-1,:))');
     xCon = @(u)(WCoptFun(u,model,conFun,1:n_th)+modC+...
         permute(sum(repmat((u-uk(k-1,:))',1,n_th,n_c).*(dconpdu-dcondu),1),[2,3,1]));
-    xQ = @(u)(quadFun((u-uk(k-1,:)),Qk,conk(k-1,:),dconpdu));
     
     % prob modified functions
     pObj = @(u)probCalc(xObj(u),0.5);
     pCon = @(u)probCalc(xCon(u),p);
     
     % new optimum
-    uOpt = fmincon(@(u)pObj(u),uGuess,[],[],[],[],umin,umax,...
-        @(u)deal([pCon(u);xQ(u)],[]),fminconopts);
+    [uOpt,~,flag] = fmincon(@(u)pObj(u),uGuess,[],[],[],[],umin,umax,...
+        @(u)deal([pCon(u)],[]),fminconopts);
     
-    % new operating point
-    K = filterFun(uk(k-1,:),uOpt,@(u)xCon(u)./norm(conk(k-1,:)));
-    uk(k,:) = uk(k-1,:)*(1-K) + uOpt*K;
+    % apply filter
+    uk(k,:) = uk(k-1,:)*(1-filter) + uOpt*filter;
     
+    % run plant
     yk(k,:) = plant(uk(k,:));
     objk(k,:) = objFun(uk(k,:),yk(k,:));
     conk(k,:) = conFun(uk(k,:),yk(k,:));
     
+    % print result
+    t1 = toc;
+    if n_c == 1
+        fprintf('%8i %10.3f %10.3f %10.3f %10.4f %10.4f %8i %10.3f\n',k,uk(k,1),uk(k,2),uk(k,3),objk(k),conk(k,1),flag,t1-t0)
+    elseif n_c == 2
+        fprintf('%8i %10.3f %10.3f %10.3f %10.4f %10.4f %10.4f %8i %10.3f\n',k,uk(k,1),uk(k,2),uk(k,3),objk(k),conk(k,1),conk(k,2),flag,t1-t0)
+    end
+    t0 = t1;
 end
 
 %% 4. Embedded functions
@@ -176,9 +194,13 @@ end
     function pOut = probCalc(out,rho)
         % calculates the probabilistic value
         mu = mean(out);
-        Sigma2 = var(out);
+        Sigma2 = cov(out);
         zp = sqrt(2)*(erfinv(2*rho-1));
-        pOut = mu+sqrt(Sigma2)*zp;
+        pOut = mu+sqrt(diag(Sigma2)')*zp;
         
+        if numel(mu) > 1
+            opts = optimoptions('fsolve','Display','off','Algorithm','levenberg-marquardt');
+            pOut = fsolve(@(x)(mvncdf([-inf,-inf],[0,0],mu-x,Sigma2)-rho),mu,opts);
+        end
     end
 end

@@ -34,7 +34,7 @@ F  = F_Ain + F_Bin; %kg/s
 k1 = k_0(1)*exp(-E(1)/(T+273.15)); %1/s
 k2 = k_0(2)*exp(-E(2)/(T+273.15)); %1/s
 
-%% mass balances
+%% run solver
 optionX = optimoptions('fsolve','Display','off','OptimalityTolerance',1e-12,'StepTolerance',1e-12,'FunctionTolerance',1e-12);
 [ySol,~,flag] = fsolve(@(y)WOmodelODE(y,k1,k2,M,F_Ain,F_Bin,F), yGuess, optionX);
 

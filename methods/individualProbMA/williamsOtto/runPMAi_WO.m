@@ -191,12 +191,5 @@ end
         out = outFun(u,y);
     end
 
-    function pOut = probCalc(out,rho)
-        % calculates the probabilistic value
-        mu = mean(out);
-        Sigma2 = var(out);
-        zp = sqrt(2)*(erfinv(2*rho-1));
-        pOut = mu+sqrt(Sigma2)*zp;
-        
-    end
+
 end
