@@ -33,16 +33,16 @@ function [uk,yk,conk,objk] = runRobustMA(varargin)
 %       This runs the default argument which is WCMA applied to WO
 %
 % >> addpath('../../caseStudies/williamsOttoCSTR/functions/')
-% >> runRobustMA('Method','PMAi')
+% >> runRobustMA('method','PMAi')
 %       This runs the same set-up as the default but uses the PMAi method
 % 
 % >> addpath('../../caseStudies/williamsOttoCSTR/functions/')
-% >> runRobustMA('Method','PMAj','filter',0.7,'StartingPoint',[3.2,6.5,90])
+% >> runRobustMA('method','PMAj','filter',0.7,'startingPoint',[3.2,6.5,90])
 %       This runs the PMAj method to WO with an input filter gain of 0.7, 
 %       and the initial point of [3.2,6.5,90]
 % 
-% See 'distillationColumn/makePlotsRobustMA_DC.m' for distillation column example
-% See 'semiBatchReactor/makePlotsRobustMA_DC.m' for semi-batch reactor example
+% See 'distillationColumn/makePlotsWCMA_DC.m' for distillation column example
+% See 'semiBatchReactor/makePlotsWCMA_DC.m' for semi-batch reactor example
 
 
 %% 0. Deal with varargin

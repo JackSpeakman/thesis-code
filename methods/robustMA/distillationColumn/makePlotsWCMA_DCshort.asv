@@ -1,7 +1,6 @@
-% Makes the plots for standard MA on DC used in the comparison chapter
+% Makes the plots for WCMA on DC used in the comparison chapter
 % Firstly, the figures will be set-up, along with the model/plant
-% functions. Then, the standard MA method is run for K=0.9, which does not
-% converge, then for K=0.6, which does converge.
+% functions. Then, the WCMA method is run for K=0.9
 
 % set forPub to 1 for save (and set the default sizes of font/figure/etc.)
 forPub = 1;
@@ -16,6 +15,7 @@ addpath('../../../plotFunctions/');
 addpath('../../../plotFunctions/colours/');
 addpath('../../../caseStudies/diehlDistillationColumn/functions/')
 addpath('../../../caseStudies/diehlDistillationColumn/analysis/')
+addpath('../')
 addpath('../')
 
 %% 0.a Set-up
