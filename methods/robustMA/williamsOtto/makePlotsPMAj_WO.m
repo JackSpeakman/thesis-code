@@ -1,8 +1,8 @@
-% makePlotsPMAi_WO makes the plots for probaiblistic MA using individual 
+% makePlotsPMAj_WO makes the plots for probaiblistic MA using joint
 % consraints on WO used in Chapter 4
 % 
 % Firstly, the figures will be set-up, along with the model/plant
-% functions. Then, standard MA is run at K=0.5, then the PMAi 
+% functions. Then, standard MA is run at K=0.5, then the PMAj 
 % method is run for fixed filter of K=1
 
 % set forPub to 1 for save (and set the default sizes of font/figure/etc.)
@@ -10,22 +10,22 @@ forPub = 1;
 
 %% 0. Set-up plots
 % 6 plots in total: J, con1, con2, u1, u2, u3
-clearvars -except PMAifig forPub
+clearvars -except PMAjfig forPub
 
 % create new figures or clear figures if they already exist
 % by not deleting already created figures and just clearing, the positions
 % do not change which is convenient for running the code multiple times
-if exist('PMAifig','var') && all(isvalid(PMAifig))
+if exist('PMAjfig','var') && all(isvalid(PMAjfig))
     % already exists -> clear
     all_figs = findobj(0, 'type', 'figure');
-    delete(setdiff(all_figs, PMAifig));
-    for i = 1:numel(PMAifig)
-        clf(PMAifig(i))
+    delete(setdiff(all_figs, PMAjfig));
+    for i = 1:numel(PMAjfig)
+        clf(PMAjfig(i))
     end
 else
     % don't exist -> create
     for i = 1:6
-        PMAifig(i) = figure;
+        PMAjfig(i) = figure;
     end
 end
 
@@ -54,17 +54,17 @@ else
     % don't change from default/current layout
     allFigPos = zeros(5,4);
     for i = 1:5
-        allFigPos(i,:) = get(PMAifig(i),'Position');
+        allFigPos(i,:) = get(PMAjfig(i),'Position');
     end
 end
 
 % set up figure sizes, etc.
-for i = 1:numel(PMAifig)
+for i = 1:numel(PMAjfig)
     % change figure
-    set(0,'CurrentFigure',PMAifig(i))  
+    set(0,'CurrentFigure',PMAjfig(i))  
     
     % create axis
-    ax(i) = axes(PMAifig(i));
+    ax(i) = axes(PMAjfig(i));
     
     % turn hold on
     hold(ax(i),'on')
@@ -75,16 +75,16 @@ for i = 1:numel(PMAifig)
     
     % run fixAxis to set-up consistent axis
     if forPub
-        fixAxis(PMAifig(i),ax(i),'linewidth',2.5)
+        fixAxis(PMAjfig(i),ax(i),'linewidth',2.5)
     else
-        fixAxis(PMAifig(i),ax(i),'linewidth',1,'fontsize',12)
+        fixAxis(PMAjfig(i),ax(i),'linewidth',1,'fontsize',12)
     end
     
     % pull axis to top
     set(ax(i),'Layer','Top')
     
     % set position
-    set(PMAifig(i),'Position',allFigPos(i,:))
+    set(PMAjfig(i),'Position',allFigPos(i,:))
 end
 
 % y-axis labels
@@ -118,15 +118,15 @@ cp1 = [0.7,0.7,0.7];
 mp1 = {'^-','Color',cp1,'MarkerSize',5,'LineWidth',2.5,'MarkerFaceColor',cp1};
 
 % WCMA line
-cp2 = brightBlue;
-mp2 = {'s-','Color',cp2,'MarkerSize',5,'LineWidth',2.5,'MarkerFaceColor',cp2};
+cp2 = brightGreen;
+mp2 = {'d-','Color',cp2,'MarkerSize',5,'LineWidth',2.5,'MarkerFaceColor',cp2};
 
 % infeasible region
 cr = [1,0.8,0.8];
 ma = {'LineStyle','none','FaceColor',cr,'ShowBaseLine',0};
 mp = {'k--','LineWidth',2.5};
 
-for i = 1:numel(PMAifig)
+for i = 1:numel(PMAjfig)
     % plot these off the figure first in the order of the desired legend
     plot(ax(i),-1,-1,mp1{:});
     plot(ax(i),-1,-1,mp{:});
@@ -187,13 +187,13 @@ plot(ax(6),0:(kmax-1),ukMA(:,3),mp1{:});
 
 drawnow
 
-%% 2. Run PMAj
+%% 2. RunPMAj
 % set-up functions
 model = @(u,th)WOmodelFun(u,yGuess,th); % model function
 
 % run
-[ukPMAi,ykPMAi,conkPMAi,objkPMAi] = runRobustMA(...
-    'method','PMAi',...     % robust MA method
+[ukPMAj,ykPMAj,conkPMAj,objkPMAj] = runRobustMA(...
+    'method','PMAj',...     % robust MA method
     'filter',1,...        % RTO input filter gain
     'kmax',kmax,...         % maximum number of iterates
     'conFun',conFun,...     % constraint function @(r,y)
@@ -204,34 +204,34 @@ model = @(u,th)WOmodelFun(u,yGuess,th); % model function
     'probChance',0.8);      % probability constraint chance
 
 % plot
-plot(ax(1),0:(kmax-1),-objkPMAi,mp2{:});
-plot(ax(2),0:(kmax-1),conkPMAi(:,1)-con0(1),mp2{:});
-plot(ax(3),0:(kmax-1),-conkPMAi(:,2)+con0(2),mp2{:});
-plot(ax(4),0:(kmax-1),ukPMAi(:,1),mp2{:});
-plot(ax(5),0:(kmax-1),ukPMAi(:,2),mp2{:});
-plot(ax(6),0:(kmax-1),ukPMAi(:,3),mp2{:});
+plot(ax(1),0:(kmax-1),-objkPMAj,mp2{:});
+plot(ax(2),0:(kmax-1),conkPMAj(:,1)-con0(1),mp2{:});
+plot(ax(3),0:(kmax-1),-conkPMAj(:,2)+con0(2),mp2{:});
+plot(ax(4),0:(kmax-1),ukPMAj(:,1),mp2{:});
+plot(ax(5),0:(kmax-1),ukPMAj(:,2),mp2{:});
+plot(ax(6),0:(kmax-1),ukPMAj(:,3),mp2{:});
 
 drawnow
 
 %% 3. Save figures
 
 if forPub
-    saveas(PMAifig(1),'plots\PMAiobj_WO.eps','epsc')
-    saveas(PMAifig(1),'plots\PMAiobj_WO.fig','fig')
+    saveas(PMAjfig(1),'plots\PMAjobj_WO.eps','epsc')
+    saveas(PMAjfig(1),'plots\PMAjobj_WO.fig','fig')
     
-    saveas(PMAifig(2),'plots\PMAicon1_WO.eps','epsc')
-    saveas(PMAifig(2),'plots\PMAicon1_WO.fig','fig')
+    saveas(PMAjfig(2),'plots\PMAjcon1_WO.eps','epsc')
+    saveas(PMAjfig(2),'plots\PMAjcon1_WO.fig','fig')
     
-    saveas(PMAifig(3),'plots\PMAicon2_WO.eps','epsc')
-    saveas(PMAifig(3),'plots\PMAicon2_WO.fig','fig')
+    saveas(PMAjfig(3),'plots\PMAjcon2_WO.eps','epsc')
+    saveas(PMAjfig(3),'plots\PMAjcon2_WO.fig','fig')
     
-    saveas(PMAifig(4),'plots\PMAiu1_WO.eps','epsc')
-    saveas(PMAifig(4),'plots\PMAiu1_WO.fig','fig')
+    saveas(PMAjfig(4),'plots\PMAju1_WO.eps','epsc')
+    saveas(PMAjfig(4),'plots\PMAju1_WO.fig','fig')
     
-    saveas(PMAifig(5),'plots\PMAiu2_WO.eps','epsc')
-    saveas(PMAifig(5),'plots\PMAiu2_WO.fig','fig')
+    saveas(PMAjfig(5),'plots\PMAju2_WO.eps','epsc')
+    saveas(PMAjfig(5),'plots\PMAju2_WO.fig','fig')
     
-    saveas(PMAifig(6),'plots\PMAiu3_WO.eps','epsc')
-    saveas(PMAifig(6),'plots\PMAiu3_WO.fig','fig')
+    saveas(PMAjfig(6),'plots\PMAju3_WO.eps','epsc')
+    saveas(PMAjfig(6),'plots\PMAju3_WO.fig','fig')
 end
 

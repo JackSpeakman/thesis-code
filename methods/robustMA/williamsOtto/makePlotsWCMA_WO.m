@@ -1,11 +1,11 @@
-% makePlotsRobustMA_WO makes the plots for robust MA on WO used in Chapter 4
+% makePlotsWCMA_WO makes the plots for Worst-case MA on WO used in Chapter 4
 % 
 % Firstly, the figures will be set-up, along with the model/plant
 % functions. Then, standard MA is run at K=0.5, then the worst-case MA 
 % method is run for fixed filter of K=1
 
 % set forPub to 1 for save (and set the default sizes of font/figure/etc.)
-forPub = 0;
+forPub = 1;
 
 %% 0. Set-up plots
 % 6 plots in total: J, con1, con2, u1, u2, u3
@@ -33,6 +33,7 @@ addpath('../../../plotFunctions/');
 addpath('../../../plotFunctions/colours/');
 addpath('../../../caseStudies/williamsOttoCSTR/functions/')
 addpath('../')
+addpath('../../modifierAdaptation/')
 
 % set up number of iterations
 kmax = 11;
@@ -185,13 +186,9 @@ plot(ax(6),0:(kmax-1),ukMA(:,3),mp1{:});
 
 drawnow
 
-%% 2. Run WCMA% set-up functions
+%% 2. Run WCMA
 % set-up functions
-yGuess = [0.08746, 0.38962, 0, 0.29061, 0.10945, 0.10754];
-u0 = [];                                % initial condition
 model = @(u,th)WOmodelFun(u,yGuess,th); % model function
-plant = @(u)WOplantFun(u,yGuess);       % plant function
-n_u = 3;   
 
 % run
 [ukWCMA,ykWCMA,conkWCMA,objkWCMA] = runRobustMA(...
@@ -217,37 +214,22 @@ drawnow
 %% 3. Save figures
 
 if forPub
-    saveas(MAfig(1),'plots\MAobj_WO.eps','epsc')
-    saveas(MAfig(1),'plots\MAobj_WO.fig','fig')
-
-    saveas(MAfig(2),'plots\MAcon_WO.eps','epsc')
-    saveas(MAfig(2),'plots\MAcon_WO.fig','fig')
-
-    saveas(MAfig(3),'plots\MAu1_WO.eps','epsc')
-    saveas(MAfig(3),'plots\MAu1_WO.fig','fig')
-
-    saveas(MAfig(4),'plots\MAu2_WO.eps','epsc')
-    saveas(MAfig(4),'plots\MAu2_WO.fig','fig')
-
-    saveas(MAfig(5),'plots\MAu3_WO.eps','epsc')
-    saveas(MAfig(5),'plots\MAu3_WO.fig','fig')
+    saveas(WCMAfig(1),'plots\WCMAobj_WO.eps','epsc')
+    saveas(WCMAfig(1),'plots\WCMAobj_WO.fig','fig')
+    
+    saveas(WCMAfig(2),'plots\WCMAcon1_WO.eps','epsc')
+    saveas(WCMAfig(2),'plots\WCMAcon1_WO.fig','fig')
+    
+    saveas(WCMAfig(3),'plots\WCMAcon2_WO.eps','epsc')
+    saveas(WCMAfig(3),'plots\WCMAcon2_WO.fig','fig')
+    
+    saveas(WCMAfig(4),'plots\WCMAu1_WO.eps','epsc')
+    saveas(WCMAfig(4),'plots\WCMAu1_WO.fig','fig')
+    
+    saveas(WCMAfig(5),'plots\WCMAu2_WO.eps','epsc')
+    saveas(WCMAfig(5),'plots\WCMAu2_WO.fig','fig')
+    
+    saveas(WCMAfig(6),'plots\WCMAu3_WO.eps','epsc')
+    saveas(WCMAfig(6),'plots\WCMAu3_WO.fig','fig')
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
