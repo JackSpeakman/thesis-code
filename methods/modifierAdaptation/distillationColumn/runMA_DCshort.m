@@ -48,8 +48,8 @@ theta_m = [8.5, 0.17, 0.155, 1, 1, 0.166, 0.51, 90900, 250, 190, 44.2, N, Nf];
 
 % Set-up cost/constraint/controller functions
 Profit = [200*32,400*60]*3.6;
-cost = @(x,u)((u(2)*0.12-x(end)*Profit(2)-x(end-1)*Profit(1))+3.7);
-cons = @(x,u,Nout)([x(Nout(1))-0.005,0.986-x(Nout(2))])*100;
+cost = @(x,u)((u(2)*0.12));%-x(end)*Profit(2)-x(end-1)*Profit(1))+3.5);
+cons = @(x,u,Nout)([x(Nout(1))-0.005,0.99-x(Nout(2))])*100;
 Noutm = [3,N+3];
 Noutp = [3,44];
 

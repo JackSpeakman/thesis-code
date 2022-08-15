@@ -17,6 +17,8 @@ function [uk,yk,conk,objk] = runRobustMA(varargin)
 %   'objFun'            @(u,y)              Objective function
 %   'modelFun'          @(u,th)             Model function
 %   'method'            string              ['WCMA','PMAi','PMAj']
+%   'umin'              1-by-n_u            Optimization minimum limit
+%   'umax'              1-by-n_u            Optimization maximum limit
 %   'probChance'        1-by-1              Probability constraint chance
 % 
 % ------ OUTPUT VARIABLES ------
@@ -39,9 +41,8 @@ function [uk,yk,conk,objk] = runRobustMA(varargin)
 %       This runs the PMAj method to WO with an input filter gain of 0.7, 
 %       and the initial point of [3.2,6.5,90]
 % 
-% 
-% See 'distillationColumn/makePlots___.m' for distillation colunm examples
-% See 'semiBatchReactor/makePlots___.m' for semi-batch reactor examples
+% See 'distillationColumn/makePlotsRobustMA_DC.m' for distillation column example
+% See 'semiBatchReactor/makePlotsRobustMA_DC.m' for semi-batch reactor example
 
 
 %% 0. Deal with varargin
@@ -56,8 +57,8 @@ th_nom = [0,0];                     % default nominal parameters
 th = [0,0; 70,160; -70,160; 70,-160; -70,-160]*3; % set of model parameters
 conFun = @(u,y)WOconFun(u,y);       % constraint function
 objFun = @(u,y)WOobjFun(u,y);       % objective function
-model_th = @(u,yG,th)WOmodelFun(u,yG,th); % model function [with paramter input]
-plant = @(u)(WOplantFun(u));        % plant function
+model_th = @(u,th)WOmodelFun(u,[],th); % model function [with paramter input]
+plant = @(u)WOplantFun(u);          % plant function
 umin = [3,6,80];                    % optimization limit [min]
 umax = [4.5,11,105];                % optimization limit [max]
 
@@ -84,9 +85,11 @@ for i = 1:2:n_in
         case 'conFun'
             conFun = varargin{i+1};
         case 'objFun'
-            conFun = varargin{i+1};
+            objFun = varargin{i+1};
         case 'modelFun'
             model_th = varargin{i+1};
+        case 'plantFun'
+            plant = varargin{i+1};
         case 'method'
             method = varargin{i+1};
         case 'umin'
@@ -111,12 +114,12 @@ end
 n_u = numel(uGuess);
 
 % combined model function
-yGuess = model_th(uGuess,[],th);
+yGuess = model_th(uGuess,th);
 
 n_th = size(th,1);
 th = [th_nom;th];
 
-model = @(u,i)model_th(u,yGuess,th(i+1,:));
+model = @(u,i)model_th(u,th(i+1,:));
 
 % fix conFun size
 size_c = size(conFun(uGuess,yGuess));
@@ -166,7 +169,7 @@ fprintf('Beginning %s run\n',method)
 fprintf(['%8s ' repmat('%10s ',1,n_u) '%10s ' repmat('%10s ',1,n_c) '%8s %10s [s]\n'],...
     'k',string([repmat('Input ',n_u,1),num2str((1:n_u)')]),'Cost',string([repmat('Con ',n_c,1),num2str((1:n_c)')]),'Flag','Time');
 
-fprintf('%8s %10.3f %10.3f %10.3f %10.4f %10.4f\n','init',uk(k,:),objk(k),conk(k,:))
+fprintf(['%8s ' repmat('%10.3f ',1,n_u) '%10.4f ' repmat('%10.3f ',1,n_c) '\n'],'init',uk(k,:),objk(k),conk(k,:))
 
 % run robust MA
 for k = 2:kmax
@@ -249,7 +252,7 @@ for k = 2:kmax
     
     % print result
     t1 = toc;
-    fprintf('%8i %10.3f %10.3f %10.3f %10.4f %10.4f %8i %10.4f\n',k,uk(k,:),objk(k),conk(k,:),flag,t1-t0)
+    fprintf(['%8i ' repmat('%10.3f ',1,n_u) '%10.4f ' repmat('%10.3f ',1,n_c) '%8i %10.4f\n'],k,uk(k,:),objk(k),conk(k,:),flag,t1-t0)
     t0 = t1;
 end
 fprintf('Finished %s run [%8.2f s]\n\n',method,t1)
@@ -271,7 +274,7 @@ fprintf('Finished %s run [%8.2f s]\n\n',method,t1)
     end
 
     function pOut = individualProbCalc(out,rho)
-        % calculates the probabilistic value (individual0
+        % calculates the probabilistic value (individual)
         mu = mean(out);
         Sigma2 = var(out);
         zp = sqrt(2)*(erfinv(2*rho-1));

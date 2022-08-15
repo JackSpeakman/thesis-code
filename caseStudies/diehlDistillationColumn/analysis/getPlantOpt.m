@@ -44,7 +44,8 @@ resetHoldVar
 objF = @(r)(cOptFun(r,@(r)(plant(r,yp0)),@(r,y)(PIcontrol(r,K,y(1:2)',contp(y')).*[3600,1]),@(u,y)(cost(y,u))));
 conF = @(r)(cOptFun(r,@(r)(plant(r,yp0)),@(r,y)(PIcontrol(r,K,y(1:2)',contp(y')).*[3600,1]),@(u,y)(cons(y,u))));
 
-rpOpt = fmincon(@(r)objF(r),r0,[],[],[],[],[68,82],[74,86],@(r)(deal(conF(r),[])),opts);
+fminopts = optimoptions('fmincon','Display','off');
+rpOpt = fmincon(@(r)objF(r),r0,[],[],[],[],[68,82],[74,86],@(r)(deal(conF(r),[])),fminopts);
 
 p = plant(rpOpt,yp0);
 ypOpt = p.y(:,end);

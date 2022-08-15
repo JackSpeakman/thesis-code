@@ -1,5 +1,14 @@
 function setupPlotsDC(ax,m1,m2)
-% sets up the axes for the DC plots
+% setupPlotsDC sets up the axes for the DC plots with the correct axis labels, lims, and
+% legend details.
+% 
+% ------ INPUT VARIABLES ------
+% ax        1-by-3          cell of axes for the figures
+% m1                        cell of line specs (line 1)
+% m2                        cell of line specs (line 2)
+%
+% ------ EXAMPLES ------
+% See '../../../methods/distillationColumn/modifierAdaptationmakePlotsMA_DCshort.m'
 
 % r plot
 xlabel(ax{1},'Iteration, $k$','Interpreter','latex');
