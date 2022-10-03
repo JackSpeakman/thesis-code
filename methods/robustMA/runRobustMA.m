@@ -16,6 +16,7 @@ function [uk,yk,conk,objk] = runRobustMA(varargin)
 %   'conFun'            @(u,y)              Constraint function
 %   'objFun'            @(u,y)              Objective function
 %   'modelFun'          @(u,th)             Model function
+%   'plantFun'          @(u,th)             Plant function
 %   'method'            string              ['WCMA','PMAi','PMAj']
 %   'umin'              1-by-n_u            Optimization minimum limit
 %   'umax'              1-by-n_u            Optimization maximum limit

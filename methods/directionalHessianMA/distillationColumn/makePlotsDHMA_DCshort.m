@@ -1,6 +1,6 @@
-% makePlotsDHMA_2varWO makes the plots for:     "DHMA"
-% on the case study:                            "2-variable Williams-Otto" 
-% used in:                                      "Chapter 5"
+% makePlotsDHMA_DCshort makes the plots for:    "DHMA"
+% on the case study:                            "Distillation Column" 
+% used in:                                      "Chapter 6"
 %
 % 1. plant/model/obj/con functions are set-up,
 % 2. figures are set-up,
