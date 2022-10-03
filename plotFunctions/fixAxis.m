@@ -9,7 +9,7 @@ end
 
 % set default values
 lw = 2;
-fs = 20;
+fs = 24;
 bx = 'off';
 
 % change values

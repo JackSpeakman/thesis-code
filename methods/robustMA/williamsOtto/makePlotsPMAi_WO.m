@@ -201,7 +201,7 @@ model = @(u,th)WOmodelFun(u,yGuess,th); % model function
     'startingPoint',u0,...  % initial conditions for RTO
     'modelFun',model,...    % model function @(u)
     'plantFun',plant,...    % plant function @(u)
-    'probChance',0.8);      % probability constraint chance
+    'probChance',0.9);      % probability constraint chance
 
 % plot
 plot(ax(1),0:(kmax-1),-objkPMAi,mp2{:});
@@ -213,25 +213,22 @@ plot(ax(6),0:(kmax-1),ukPMAi(:,3),mp2{:});
 
 drawnow
 
-%% 3. Save figures
+% make legend
+leg = {'Standard MA','PMAi','Plant Optimum'};
+for i = 1:numel(PMAifig)
+    legend(ax(i),leg,'Interpreter','latex','Location','southeast')
+end
 
+% fix constraint legend
+legend(ax(2),{'Infeasible','Standard MA','PMAi','Plant Optimum'},'Interpreter','latex','Location','southeast')
+legend(ax(3),{'Infeasible','Standard MA','PMAi','Plant Optimum'},'Interpreter','latex','Location','northeast')
+
+%% 3. Save figures
+filenames = {'obj','con1','con2','u1','u2','u3'};
 if forPub
-    saveas(PMAifig(1),'plots\PMAiobj_WO.eps','epsc')
-    saveas(PMAifig(1),'plots\PMAiobj_WO.fig','fig')
-    
-    saveas(PMAifig(2),'plots\PMAicon1_WO.eps','epsc')
-    saveas(PMAifig(2),'plots\PMAicon1_WO.fig','fig')
-    
-    saveas(PMAifig(3),'plots\PMAicon2_WO.eps','epsc')
-    saveas(PMAifig(3),'plots\PMAicon2_WO.fig','fig')
-    
-    saveas(PMAifig(4),'plots\PMAiu1_WO.eps','epsc')
-    saveas(PMAifig(4),'plots\PMAiu1_WO.fig','fig')
-    
-    saveas(PMAifig(5),'plots\PMAiu2_WO.eps','epsc')
-    saveas(PMAifig(5),'plots\PMAiu2_WO.fig','fig')
-    
-    saveas(PMAifig(6),'plots\PMAiu3_WO.eps','epsc')
-    saveas(PMAifig(6),'plots\PMAiu3_WO.fig','fig')
+    for i = 1:numel(PMAifig)
+        saveas(PMAifig(i),['plots\PMAi' filenames{i} '_WO.eps'],'epsc')
+        saveas(PMAifig(i),['plots\PMAi' filenames{i} '_WO.fig'],'fig')
+    end
 end
 

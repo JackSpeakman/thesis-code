@@ -11,8 +11,8 @@ function [uk,yk,conk,objk] = runRobustMA(varargin)
 %   'kmax'              1-by-1              Number of RTO iterations
 %   'stratingPoint'     1-by-n_u            RTO starting point
 %   'uGuess'            1-by-n_u            Input guess (for initial runs)
-%   'th'                1-by-2              Set of model parameters
-%   'th_nom'            1-by-n_th           Nominal model parameters
+%   'th'                i-by-n_th           Set of model parameters
+%   'th_nom'            i-by-n_th           Nominal model parameters
 %   'conFun'            @(u,y)              Constraint function
 %   'objFun'            @(u,y)              Objective function
 %   'modelFun'          @(u,th)             Model function
@@ -114,7 +114,7 @@ end
 n_u = numel(uGuess);
 
 % combined model function
-yGuess = model_th(uGuess,th);
+yGuess = model_th(uGuess,th_nom);
 
 n_th = size(th,1);
 th = [th_nom;th];
@@ -129,20 +129,23 @@ if size_c(1) ~= 1
 end
 
 % get model outputs size
-n_y = numel(yGuess);
+n_ym = numel(yGuess);
+
+yGuessp = plant(uGuess);
+n_yp = numel(yGuessp);
 
 % gradient shift
 du = eye(n_u)*0.0001;
 
 % proallocate outputs
 uk = zeros(kmax,n_u);
-yk = zeros(kmax,n_y);
+yk = zeros(kmax,n_yp);
 objk = zeros(kmax,1);
 conk = zeros(kmax,n_c);
 
 % global variables
 u_last = zeros(1,n_u);
-y_last = zeros(1,n_y);
+y_last = cell(1,n_th);
 
 %% 2. Find starting point
 k = 1;
@@ -175,10 +178,10 @@ fprintf(['%8s ' repmat('%10.3f ',1,n_u) '%10.4f ' repmat('%10.3f ',1,n_c) '\n'],
 for k = 2:kmax
     
     % gradients
-    dobjpdu = zeros(3,1);
-    dconpdu = zeros(3,1,n_c);
-    dobjdu = zeros(3,n_th);
-    dcondu = zeros(3,n_th,n_c);
+    dobjpdu = zeros(n_u,1);
+    dconpdu = zeros(n_u,1,n_c);
+    dobjdu = zeros(n_u,n_th);
+    dcondu = zeros(n_u,n_th,n_c);
     
     for i = 1:n_u
         u = uk(k-1,:) + du(i,:);
@@ -205,8 +208,8 @@ for k = 2:kmax
     end
     
     % modified functions [WCMA]
-    modObjFun = @(u)(WCoptFun(u,model,objFun)+modO+(dobjpdu-dobjdu)'*(u-uk(k-1,:))');
-    modConFun = @(u)(WCoptFun(u,model,conFun)+modC+...
+    modObjFun = @(u)(WCoptFun(u,model,objFun,1)+modO+(dobjpdu-dobjdu)'*(u-uk(k-1,:))');
+    modConFun = @(u)(WCoptFun(u,model,conFun,n_c)+modC+...
         permute(sum(repmat((u-uk(k-1,:))',1,n_th,n_c).*(dconpdu-dcondu),1),[2,3,1]));
     
     switch method
@@ -258,19 +261,23 @@ end
 fprintf('Finished %s run [%8.2f s]\n\n',method,t1)
 
 %% 4. Embedded functions
-    function out = WCoptFun(u,yFun,outFun)
+    function out = WCoptFun(u,yFun,outFun,n_out)
         % calculates the optimization function for all th (efficient)
         if u == u_last
             y = y_last;
         else
-            y = zeros(n_th,6);
+            y = cell(1,n_th);
             for jj = 1:n_th
-                y(jj,:) = yFun(u,jj);
+                y{jj} = yFun(u,jj);
             end
             u_last = u;
             y_last = y;
         end
-        out = outFun(u,y);
+        
+        out = zeros(n_th,n_out);
+        for jj = 1:n_th
+            out(jj,:) = outFun(u,y{jj});
+        end
     end
 
     function pOut = individualProbCalc(out,rho)

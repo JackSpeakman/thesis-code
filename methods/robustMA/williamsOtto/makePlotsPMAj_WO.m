@@ -117,7 +117,7 @@ con0 = conFun([],zeros(1,6));
 cp1 = [0.7,0.7,0.7];
 mp1 = {'^-','Color',cp1,'MarkerSize',5,'LineWidth',2.5,'MarkerFaceColor',cp1};
 
-% WCMA line
+% PMAj line
 cp2 = brightGreen;
 mp2 = {'d-','Color',cp2,'MarkerSize',5,'LineWidth',2.5,'MarkerFaceColor',cp2};
 
@@ -201,7 +201,7 @@ model = @(u,th)WOmodelFun(u,yGuess,th); % model function
     'startingPoint',u0,...  % initial conditions for RTO
     'modelFun',model,...    % model function @(u)
     'plantFun',plant,...    % plant function @(u)
-    'probChance',0.8);      % probability constraint chance
+    'probChance',0.9);      % probability constraint chance
 
 % plot
 plot(ax(1),0:(kmax-1),-objkPMAj,mp2{:});
@@ -213,25 +213,22 @@ plot(ax(6),0:(kmax-1),ukPMAj(:,3),mp2{:});
 
 drawnow
 
-%% 3. Save figures
+% make legend
+leg = {'Standard MA','PMAj','Plant Optimum'};
+for i = 1:numel(PMAjfig)
+    legend(ax(i),leg,'Interpreter','latex','Location','southeast')
+end
 
+% fix constraint legend
+legend(ax(2),{'Infeasible','Standard MA','PMAj','Plant Optimum'},'Interpreter','latex','Location','southeast')
+legend(ax(3),{'Infeasible','Standard MA','PMAj','Plant Optimum'},'Interpreter','latex','Location','northeast')
+
+%% 3. Save figures
+filenames = {'obj','con1','con2','u1','u2','u3'};
 if forPub
-    saveas(PMAjfig(1),'plots\PMAjobj_WO.eps','epsc')
-    saveas(PMAjfig(1),'plots\PMAjobj_WO.fig','fig')
-    
-    saveas(PMAjfig(2),'plots\PMAjcon1_WO.eps','epsc')
-    saveas(PMAjfig(2),'plots\PMAjcon1_WO.fig','fig')
-    
-    saveas(PMAjfig(3),'plots\PMAjcon2_WO.eps','epsc')
-    saveas(PMAjfig(3),'plots\PMAjcon2_WO.fig','fig')
-    
-    saveas(PMAjfig(4),'plots\PMAju1_WO.eps','epsc')
-    saveas(PMAjfig(4),'plots\PMAju1_WO.fig','fig')
-    
-    saveas(PMAjfig(5),'plots\PMAju2_WO.eps','epsc')
-    saveas(PMAjfig(5),'plots\PMAju2_WO.fig','fig')
-    
-    saveas(PMAjfig(6),'plots\PMAju3_WO.eps','epsc')
-    saveas(PMAjfig(6),'plots\PMAju3_WO.fig','fig')
+    for i = 1:numel(PMAjfig)
+        saveas(PMAjfig(i),['plots\PMAj' filenames{i} '_WO.eps'],'epsc')
+        saveas(PMAjfig(i),['plots\PMAj' filenames{i} '_WO.fig'],'fig')
+    end
 end
 
